@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useNotification } from "@/context/NotificationContext";
+import { GlobalAlertBar } from "./GlobalAlertBar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
     LayoutDashboard, ClipboardCheck, CalendarClock,
@@ -54,7 +55,9 @@ export function ControllerLayout() {
     const handleLogout = () => { logout(); navigate("/login", { replace: true }); };
 
     return (
-        <div className="min-h-screen flex bg-background">
+        <div className="min-h-screen flex flex-col w-full bg-background">
+            <GlobalAlertBar />
+            <div className="flex-1 flex w-full min-h-0 relative">
             {/* Sidebar */}
             <aside className={`fixed inset-y-0 left-0 z-30 w-56 bg-card border-r flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:relative lg:translate-x-0`}>
                 {/* Brand */}
@@ -63,7 +66,7 @@ export function ControllerLayout() {
                         <span className="text-xs font-bold text-white">C</span>
                     </div>
                     <div>
-                        <p className="text-sm font-bold text-foreground">AdScroll360</p>
+                        <p className="text-sm font-bold text-foreground">Zaptiz</p>
                         <p className="text-[10px] text-violet-600 font-medium">Controller Portal</p>
                     </div>
                 </div>
@@ -177,6 +180,7 @@ export function ControllerLayout() {
                 <main className="flex-1 overflow-auto p-6 lg:p-8">
                     <Outlet />
                 </main>
+                </div>
             </div>
         </div>
     );

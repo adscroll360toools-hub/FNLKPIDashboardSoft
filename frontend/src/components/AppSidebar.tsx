@@ -71,7 +71,7 @@ export function AppSidebar() {
                 <span className="text-sm font-bold text-primary-foreground">A</span>
               </div>
               <div>
-                <h2 className="text-sm font-bold tracking-tight text-foreground">AdScroll360</h2>
+                <h2 className="text-sm font-bold tracking-tight text-foreground">Zaptiz</h2>
                 <p className="text-[10px] text-muted-foreground">Performance System</p>
               </div>
             </div>

@@ -29,6 +29,7 @@ const taskSchema = new mongoose.Schema(
     kpiRelationId: { type: String },
     kpiRelationName: { type: String },
     type: { type: String, enum: ['Individual', 'Group'], default: 'Individual' },
+    taskType: { type: String, enum: ['Daily', 'One-time', 'Deadline-based'], default: 'One-time' },
     status: {
       type: String,
       enum: ['Pending', 'In Progress', 'Completed', 'Approved'],

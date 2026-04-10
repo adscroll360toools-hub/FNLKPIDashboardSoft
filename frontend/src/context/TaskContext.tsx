@@ -32,6 +32,7 @@ export interface AppTask {
     kpiRelationId?: string;
     kpiRelationName?: string;
     type: "Individual" | "Group";
+    taskType: "Daily" | "One-time" | "Deadline-based";
     status: TaskStatus;
     deadline: string;
     timeSpent: string;
@@ -64,6 +65,7 @@ function mapTask(t: any): AppTask {
         kpiRelationId: t.kpiRelationId,
         kpiRelationName: t.kpiRelationName,
         type: t.type,
+        taskType: t.taskType || "One-time",
         status: t.status,
         deadline: t.deadline,
         timeSpent: t.timeSpent,

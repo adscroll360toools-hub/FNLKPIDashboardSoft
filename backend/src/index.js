@@ -1,5 +1,5 @@
 // ============================================================
-//  AdScroll360 WorkHub — Backend API Server (Express.js + MongoDB)
+//  Zaptiz WorkHub — Backend API Server (Express.js + MongoDB)
 //  Entry point: src/index.js
 // ============================================================
 
@@ -72,7 +72,7 @@ app.use((err, _req, res, _next) => {
 
 // ── Start ──────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`✅  AdScroll360 WorkHub API running on http://localhost:${PORT}`);
+  console.log(`✅  Zaptiz WorkHub API running on http://localhost:${PORT}`);
 });
 
 export default app;

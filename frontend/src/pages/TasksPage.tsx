@@ -23,7 +23,7 @@ const statusConfig = {
   "Approved": { color: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400", icon: CheckCircle2 },
 };
 
-type FilterTab = "All" | TaskStatus;
+type FilterTab = "All" | TaskStatus | "Daily" | "Expired";
 
 // --- Sub-component: ChatBox (Isolated for performance) ---
 const ChatBox = memo(({ taskId, messages, currentUser }: { taskId: string, messages: any[], currentUser: any }) => {
@@ -131,11 +131,20 @@ export default function TasksPage() {
 
   const selectedTask = useMemo(() => selectedTaskId ? tasks.find(t => t.id === selectedTaskId) : null, [selectedTaskId, tasks]);
 
-  const [form, setForm] = useState({ title: "", category: CATEGORIES[0], assignedToId: "", status: "Pending" as TaskStatus, time: "", notes: "" });
+  const [form, setForm] = useState({ title: "", category: CATEGORIES[0], assignedToId: "", status: "Pending" as TaskStatus, time: "", notes: "", taskType: "One-time" as "Daily" | "One-time" | "Deadline-based", deadlineDate: "" });
 
   useOutsideClick(statusMenuRef, () => setOpenStatusMenu(null));
 
-  const filtered = (activeFilter === "All" ? tasks : tasks.filter((t) => t.status === activeFilter))
+  const filtered = tasks.filter(t => {
+    if (activeFilter === "All") return true;
+    if (activeFilter === "Daily") return t.taskType === "Daily";
+    if (activeFilter === "Expired") {
+        if (!t.deadline || t.deadline === "Daily") return false;
+        const d = new Date(t.deadline);
+        return d < new Date() && t.status !== "Completed" && t.status !== "Approved";
+    }
+    return t.status === activeFilter;
+})
       .filter(t => currentUser?.role === "employee" ? t.assigneeId === currentUser.id : true);
 
   const handleOpen = () => {
@@ -155,10 +164,11 @@ export default function TasksPage() {
         assignedByName: currentUser!.name,
         type: "Individual",
         status: form.status,
-        deadline: new Date(Date.now() + 7 * 86400000).toLocaleDateString(),
+        taskType: form.taskType,
+        deadline: form.taskType === 'Daily' ? 'Daily' : form.deadlineDate || new Date(Date.now() + 7 * 86400000).toLocaleDateString(),
         timeSpent: "0m",
         notes: form.notes
-    });
+    } as any);
     if (res.success) { setShowModal(false); toast.success("Task created!"); }
     else toast.error(res.error);
   };
@@ -182,7 +192,7 @@ export default function TasksPage() {
         </motion.div>
 
         <motion.div variants={fadeUp} className="flex gap-2 border-b">
-          {(["All", ...STATUSES] as const).map((tab) => (
+          {(["All", ...STATUSES, "Daily", "Expired"] as const).map((tab) => (
             <button key={tab} onClick={() => setActiveFilter(tab)}
               className={`pb-2.5 px-4 text-sm font-medium transition-all relative ${activeFilter === tab ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
               {tab} {activeFilter === tab && <motion.div layoutId="filter-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
@@ -206,6 +216,16 @@ export default function TasksPage() {
                     className="border-b last:border-0 transition-colors hover:bg-muted/50 group cursor-pointer"
                     onClick={() => setSelectedTaskId(task.id)}>
                     <td className="px-5 py-3">
+{task.taskType === 'Daily' && <span className="inline-block px-2 py-0.5 mb-1 rounded bg-blue-100 text-blue-700 text-[10px] font-bold tracking-wide">DAILY TASK</span>}
+{(() => {
+    if(task.deadline && task.deadline !== "Daily" && task.status !== "Completed" && task.status !== "Approved") {
+        if(new Date(task.deadline) < new Date()) {
+             return <span className="inline-block ml-2 px-2 py-0.5 mb-1 rounded bg-red-100 text-red-700 text-[10px] font-bold tracking-wide animate-pulse">EXPIRED</span>;
+        }
+    }
+    return null;
+})()}
+
                         <p className="text-sm font-medium text-foreground">{task.title}</p>
                         <p className="mt-0.5 text-xs text-muted-foreground truncate max-w-xs">{task.category}</p>
                     </td>
@@ -252,6 +272,16 @@ export default function TasksPage() {
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div className="space-y-1.5 font-medium"><Label>Task Title</Label><Input value={form.title} onChange={e=>setForm({...form, title: e.target.value})} placeholder="e.g. Design YouTube Thumbnail" /></div>
                     <div className="grid grid-cols-2 gap-4">
+<div className="space-y-1.5"><Label>Task Type</Label>
+<select value={form.taskType} onChange={e=>setForm({...form, taskType: e.target.value as any})} className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+ <option value="One-time">One-time Task</option>
+ <option value="Daily">Daily Task</option>
+ <option value="Deadline-based">Deadline-based Task</option>
+</select></div>
+{form.taskType === 'Deadline-based' && <div className="space-y-1.5"><Label>Deadline Date (Optional)</Label><Input type="date" value={form.deadlineDate} onChange={e=>setForm({...form, deadlineDate: e.target.value})} className="h-9" /></div>}
+
+</div>
+<div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5"><Label>Category</Label><select value={form.category} onChange={e=>setForm({...form, category: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm">{CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
                         <div className="space-y-1.5"><Label>Assign To</Label><select value={form.assignedToId} onChange={e=>setForm({...form, assignedToId: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Select Employee...</option>{assignees.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
                     </div>

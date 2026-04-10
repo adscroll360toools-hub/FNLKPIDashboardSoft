@@ -57,7 +57,7 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-lg">
             <span className="text-lg font-bold text-primary-foreground">A</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">AdScroll360</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Zaptiz</h1>
           <p className="mt-1 text-sm text-muted-foreground">Performance & KPI Management</p>
         </div>
 
@@ -120,7 +120,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-xs text-muted-foreground mt-8">
-          AdScroll360 © {new Date().getFullYear()} · Internal Use Only
+          Zaptiz © {new Date().getFullYear()} · Internal Use Only
         </p>
       </motion.div>
     </div>

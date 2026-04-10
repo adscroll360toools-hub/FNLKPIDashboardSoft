@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTask } from "@/context/TaskContext";
 import { useAttendance } from "@/context/AttendanceContext";
 import { useNotification } from "@/context/NotificationContext";
+import { GlobalAlertBar } from "./GlobalAlertBar";
 
 interface Notification {
   id: string;
@@ -145,10 +146,12 @@ export function AppLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center justify-between border-b bg-card px-4">
+      <div className="min-h-screen flex flex-col w-full">
+        <GlobalAlertBar />
+        <div className="flex-1 flex w-full min-h-0 bg-background">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <header className="h-14 flex items-center justify-between border-b bg-card px-4 shrink-0">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <div className="h-5 w-px bg-border" />
@@ -290,6 +293,7 @@ export function AppLayout() {
           <main className="flex-1 overflow-auto p-6 lg:p-8">
             <Outlet />
           </main>
+        </div>
         </div>
       </div>
     </SidebarProvider>

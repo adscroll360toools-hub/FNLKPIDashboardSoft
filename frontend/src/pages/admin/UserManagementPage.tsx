@@ -13,10 +13,13 @@ import {
 import { toast } from "sonner";
 import { useOutsideClick } from "@/hooks/useOutsideClick";
 
-const ROLE_META: Record<UserRole, { label: string; icon: React.ElementType; color: string; bg: string; badge: string }> = {
-    admin: { label: "Core Admin", icon: Shield, color: "text-primary", bg: "bg-primary/10", badge: "bg-primary/10 text-primary" },
-    controller: { label: "Controller", icon: Users, color: "text-violet-600", bg: "bg-violet-100 dark:bg-violet-900/20", badge: "bg-violet-100 text-violet-700 dark:bg-violet-900/20 dark:text-violet-400" },
-    employee: { label: "Employee", icon: UserCircle, color: "text-emerald-600", bg: "bg-emerald-100 dark:bg-emerald-900/20", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400" },
+const getRoleMeta = (role: string) => {
+    const meta: Record<string, any> = {
+        admin: { label: "Core Admin", icon: Shield, color: "text-primary", bg: "bg-primary/10", badge: "bg-primary/10 text-primary" },
+        controller: { label: "Controller", icon: Users, color: "text-violet-600", bg: "bg-violet-100 dark:bg-violet-900/20", badge: "bg-violet-100 text-violet-700 dark:bg-violet-900/20 dark:text-violet-400" },
+        employee: { label: "Employee", icon: UserCircle, color: "text-emerald-600", bg: "bg-emerald-100 dark:bg-emerald-900/20", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400" },
+    };
+    return meta[role.toLowerCase()] || { label: role.charAt(0).toUpperCase() + role.slice(1), icon: UserCircle, color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-900/20", badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" };
 };
 
 const DEPARTMENTS = ["Management", "Content", "Design", "Marketing", "Analytics", "Sales", "Other"];
@@ -24,7 +27,7 @@ const ROLES_SELECTABLE: ("controller" | "employee")[] = ["controller", "employee
 
 type ModalMode = "add-controller" | "add-employee" | "change-password" | "edit" | null;
 
-const emptyUserForm = { name: "", email: "", password: "", confirmPassword: "", department: DEPARTMENTS[0], position: "", score: 80, role: "employee" as "controller" | "employee" };
+const emptyUserForm = { name: "", email: "", password: "", confirmPassword: "", department: DEPARTMENTS[0], position: "", score: 80, role: "employee" as string };
 const emptyPwForm = { newPw: "", confirmPw: "" };
 
 export default function UserManagementPage() {
@@ -58,7 +61,7 @@ export default function UserManagementPage() {
 
     const openEdit = (user: AppUser) => {
         setEditTarget(user);
-        setUserForm({ name: user.name, email: user.email, password: "", confirmPassword: "", department: user.department ?? DEPARTMENTS[0], position: user.position ?? "", score: (user as any).score ?? 80, role: user.role as "controller" | "employee" });
+        setUserForm({ name: user.name, email: user.email, password: "", confirmPassword: "", department: user.department ?? DEPARTMENTS[0], position: user.position ?? "", score: (user as any).score ?? 80, role: user.role as string });
         setFormError("");
         setModalMode("edit");
         setMenuOpen(null);
@@ -82,7 +85,7 @@ export default function UserManagementPage() {
         if (userForm.password.length < 6) { setFormError("Password must be at least 6 characters."); return; }
         if (userForm.password !== userForm.confirmPassword) { setFormError("Passwords do not match."); return; }
 
-        const role: UserRole = modalMode === "add-controller" ? "controller" : "employee";
+        const role = userForm.role || (modalMode === "add-controller" ? "controller" : "employee");
         const result = await addUser({
             name: userForm.name.trim(),
             email: userForm.email.trim(),
@@ -93,7 +96,7 @@ export default function UserManagementPage() {
         });
 
         if (result.success) {
-            toast.success(`${ROLE_META[role].label} added!`, { description: `${userForm.name} can now sign in.` });
+            toast.success(`${getRoleMeta(role).label} added!`, { description: `${userForm.name} can now sign in.` });
             closeModal();
         } else {
             setFormError(result.error ?? "Failed to add user.");
@@ -167,7 +170,7 @@ export default function UserManagementPage() {
                 <motion.div variants={fadeUp} className="grid grid-cols-3 gap-4">
                     {(["all", "controller", "employee"] as const).map((role) => {
                         const count = role === "all" ? managed.length : managed.filter((u) => u.role === role).length;
-                        const meta = role === "all" ? { label: "Total Users", icon: Shield, color: "text-foreground", bg: "bg-muted" } : ROLE_META[role];
+                        const meta = role === "all" ? { label: "Total Users", icon: Shield, color: "text-foreground", bg: "bg-muted" } : getRoleMeta(role);
                         const Icon = meta.icon;
                         const isActive = filterRole === role;
                         return (
@@ -198,7 +201,7 @@ export default function UserManagementPage() {
                         <tbody>
                             <AnimatePresence mode="popLayout">
                                 {filtered.map((user) => {
-                                    const meta = ROLE_META[user.role];
+                                    const meta = getRoleMeta(user.role);
                                     const Icon = meta.icon;
                                     return (
                                         <motion.tr key={user.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="border-b last:border-0 transition-colors hover:bg-muted/50">
@@ -247,6 +250,7 @@ export default function UserManagementPage() {
                                     <form onSubmit={modalMode === "edit" ? handleEditUser : handleAddUser} className="px-6 py-5 space-y-4">
                                         <div className="space-y-1.5"><Label>Full Name</Label><Input value={userForm.name} onChange={(e) => setUserForm({ ...userForm, name: e.target.value })} /></div>
                                         <div className="space-y-1.5"><Label>Email</Label><Input value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} /></div>
+                                        <div className="space-y-1.5"><Label>Role / Designation (Type to create new)</Label><Input value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value })} placeholder="e.g. employee, controller, manager" /></div>
                                         {modalMode !== "edit" && (
                                             <div className="space-y-3">
                                                 <Label>Password</Label><Input type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} />

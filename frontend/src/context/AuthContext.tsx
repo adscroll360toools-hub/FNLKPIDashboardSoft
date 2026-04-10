@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { api } from "@/lib/api";
 
-export type UserRole = "super_admin" | "admin" | "controller" | "employee";
+export type UserRole = "super_admin" | "admin" | "controller" | "employee" | string;
 
 export interface AppUser {
     id: string;
@@ -29,7 +29,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const SESSION_KEY = "adscroll360_session_v4";
+const SESSION_KEY = "zaptiz_session_v4";
 
 function mapUser(u: any): AppUser {
     return {
@@ -78,8 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const login = async (email: string, password: string) => {
         try {
-            // First try super admin login
-            if (email.toLowerCase() === 'admin@adscroll360.com') {
+            if (email.toLowerCase() === 'admin@zaptiz.com') {
                 const { user } = await api.superAdmin.login(email, password);
                 const found = mapUser(user);
                 setCurrentUser(found);
